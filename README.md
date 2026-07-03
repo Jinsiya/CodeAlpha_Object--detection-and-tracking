@@ -1,5 +1,4 @@
-<img width="294" height="329" alt="image" src="https://github.com/user-attachments/assets/29493f9b-584d-475c-813c-b9c0ea95aa02" />
-# VisionAI - Object Detection & Tracking System
+OBJECT DETECTION AND TRACKING SYSTEM
 
 Real-time object detection and tracking using webcam feed with deep learning models.
 
@@ -42,3 +41,30 @@ VisionAI is a real-time object detection and tracking system that identifies and
 | **Tracking** | SORT Algorithm (Kalman Filter + Hungarian Algorithm) |
 
 ## 📁 Project Structure
+object-detection-tracker/
+│
+├── app.py # Main Flask application
+├── requirements.txt # Python dependencies
+│
+├── models/ # Pre-trained models
+│ ├── MobileNetSSD_deploy.prototxt
+│ ├── MobileNetSSD_deploy.caffemodel
+│ ├── yolov3.cfg
+│ └── yolov3.weights
+│
+├── static/
+│ ├── css/
+│ │ └── style.css
+│ └── js/
+│ └── script.js
+│
+├── templates/
+│ └── index.html
+│
+├── utils/
+│ ├── detector.py # Object detection
+│ ├── tracker.py # SORT tracking
+│ └── video_processor.py
+
+PIPELINE OF SYSTEM
+Camera Capture → Preprocess → YOLO/MobileNet SSD → NMS → Tracking → Draw Results
