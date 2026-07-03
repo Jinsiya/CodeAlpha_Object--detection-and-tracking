@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionAI - Face Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0a0e1a;
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: radial-gradient(ellipse at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                              radial-gradient(ellipse at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            background: #111827;
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== VIDEO ===== */
+        .video-wrapper {
+            background: #1a2332;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            min-height: 480px;
+            border: 1px solid rgba(99, 102, 241, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video {
+            width: 100%;
+            display: none;
+            transform: scaleX(-1);
+        }
+
+        #canvas {
+            width: 100%;
+            display: none;
+        }
+
+        #video.active,
+        #canvas.active {
+            display: block;
+        }
+
+        /* ===== PLACEHOLDER ===== */
+        .placeholder {
+            position: absolute;
+            text-align: center;
+            color: #64748b;
+            pointer-events: none;
+        }
+
+        .placeholder i {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 12px;
+            color: #6366f1;
+            opacity: 0.3;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .placeholder h2 {
+            font-size: 22px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .placeholder p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* ===== STATS ===== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            background: #1a2332;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.06);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-value.purple {
+            color: #818cf8;
+        }
+        .stat-value.green {
+            color: #22c55e;
+        }
+        .stat-value.blue {
+            color: #3b82f6;
+        }
+        .stat-value.orange {
+            color: #f59e0b;
+        }
+
+        /* ===== DETECTION LIST ===== */
+        .detection-panel {
+            margin-top: 16px;
+            background: #1a2332;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid rgba(99, 102, 241, 0.06);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .detection-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+        .detection-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .detection-panel::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 10px;
+        }
+
+        .detection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        .detection-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .detection-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .detection-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            flex-shrink: 0;
+        }
+
+        .detection-name {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .detection-conf {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .empty-state i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 4px;
+            opacity: 0.3;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 22px;
+            border-radius: 12px;
+            background: #1a2332;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            color: #f1f5f9;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: #22c55e;
+        }
+        .toast.success .icon {
+            color: #22c55e;
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+        }
+        .toast.error .icon {
+            color: #ef4444;
+        }
+
+        .toast .icon {
+            font-size: 18px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls {
+                width: 100%;
+            }
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .video-wrapper {
+                min-height: 280px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-value {
+                font-size: 20px;
+            }
+            .video-wrapper {
+                min-height: 220px;
+            }
+            .placeholder i {
+                font-size: 36px;
+            }
+            .placeholder h2 {
+                font-size: 18px;
+            }
+            .toast {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <span class="icon"><i class="fas fa-check-circle"></i></span>
+        <span id="toastMsg">Ready</span>
+    </div>
+
+    <!-- ===== CONTAINER ===== -->
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-brain"></i></div>
+                <div class="logo-text">
+                    <h1>VisionAI</h1>
+                    <span>Face Detection</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-start" id="startBtn"><i class="fas fa-play"></i> Start</button>
+                <button class="btn btn-stop" id="stopBtn" disabled><i class="fas fa-stop"></i> Stop</button>
+            </div>
+        </div>
+
+        <!-- Video -->
+        <div class="video-wrapper">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div class="placeholder" id="placeholder">
+                <i class="fas fa-camera-retro"></i>
+                <h2>Ready to Detect</h2>
+                <p>Click <strong>Start</strong> to begin face detection</p>
+                <p style="font-size: 12px; margin-top: 6px; color: #475569;">
+                    <i class="fas fa-shield-alt"></i> Camera access required
+                </p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-label">Faces</span>
+                <span class="stat-value purple" id="faceCount">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">FPS</span>
+                <span class="stat-value green" id="fpsDisplay">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Status</span>
+                <span class="stat-value blue" id="statusDisplay" style="font-size:18px;">Idle</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Uptime</span>
+                <span class="stat-value orange" id="uptimeDisplay">00:00</span>
+            </div>
+        </div>
+
+        <!-- Detection List -->
+        <div class="detection-panel" id="detectionPanel">
+            <div class="detection-header">
+                <span><i class="fas fa-list"></i> Detected Faces</span>
+                <span id="detectionCount">0</span>
+            </div>
+            <div id="detectionList">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    No faces detected yet
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ===== DOM Elements =====
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const placeholder = document.getElementById('placeholder');
+        const faceCount = document.getElementById('faceCount');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const uptimeDisplay = document.getElementById('uptimeDisplay');
+        const detectionList = document.getElementById('detectionList');
+        const detectionCount = document.getElementById('detectionCount');
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+
+        // ===== State =====
+        let stream = null;
+        let isRunning = false;
+        let intervalId = null;
+        let frameCount = 0;
+        let lastFpsUpdate = Date.now();
+        let startTime = null;
+        let uptimeInterval = null;
+        let currentFps = 0;
+        const ctx = canvas.getContext('2d');
+
+        // ===== Toast =====
+        function showToast(message, type) {
+            type = type || '';
+            toast.className = 'toast show ' + type;
+            toastMsg.textContent = message;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ===== Set Status =====
+        function setStatus(status) {
+            statusDisplay.textContent = status;
+            const colors = {
+                'Idle': '#64748b',
+                'Running': '#22c55e',
+                'Stopped': '#ef4444'
+            };
+            statusDisplay.style.color = colors[status] || '#64748b';
+        }
+
+        // ===== Update Uptime =====
+        function updateUptime() {
+            if (!startTime) {
+                uptimeDisplay.textContent = '00:00';
+                return;
+            }
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const secs = String(elapsed % 60).padStart(2, '0');
+            uptimeDisplay.textContent = mins + ':' + secs;
+        }
+
+        // ===== Update Detection List =====
+        function updateDetectionList(objects) {
+            if (!objects || objects.length === 0) {
+                detectionList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        No faces detected yet
+                    </div>
+                `;
+                detectionCount.textContent = '0';
+                return;
+            }
+
+            let html = '';
+            objects.forEach((obj, index) => {
+                const conf = Math.round((obj.confidence || 0.95) * 100);
+                html += `
+                    <div class="detection-item">
+                        <span class="detection-dot"></span>
+                        <span class="detection-name">Face #${index + 1}</span>
+                        <span class="detection-conf">${conf}% confidence</span>
+                    </div>
+                `;
+            });
+            detectionList.innerHTML = html;
+            detectionCount.textContent = objects.length;
+        }
+
+        // ===== Start Camera =====
+        startBtn.onclick = async () => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast('Browser does not support camera', 'error');
+                return;
+            }
+
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+                await video.play();
+
+                video.classList.add('active');
+                canvas.classList.remove('active');
+                placeholder.style.display = 'none';
+
+                isRunning = true;
+                startTime = Date.now();
+                stopBtn.disabled = false;
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+                setStatus('Running');
+                showToast('✅ Camera started successfully!', 'success');
+
+                // Start uptime
+                if (uptimeInterval) clearInterval(uptimeInterval);
+                uptimeInterval = setInterval(updateUptime, 1000);
+
+                // Start detection
+                if (intervalId) clearInterval(intervalId);
+                intervalId = setInterval(detectFaces, 120);
+
+            } catch (err) {
+                console.error('Camera error:', err);
+                let msg = 'Cannot access camera. ';
+                if (err.name === 'NotAllowedError') {
+                    msg = 'Camera access denied. Please allow camera access.';
+                } else if (err.name === 'NotFoundError') {
+                    msg = 'No camera found. Please connect a camera.';
+                } else {
+                    msg += err.message;
+                }
+                showToast('❌ ' + msg, 'error');
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+                setStatus('Idle');
+            }
+        };
+
+        // ===== Stop Camera =====
+        stopBtn.onclick = () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            video.srcObject = null;
+            video.classList.remove('active');
+            canvas.classList.remove('active');
+            placeholder.style.display = 'block';
+
+            isRunning = false;
+            stopBtn.disabled = true;
+            startBtn.disabled = false;
+            setStatus('Stopped');
+            faceCount.textContent = '0';
+            fpsDisplay.textContent = '0';
+            startTime = null;
+            uptimeDisplay.textContent = '00:00';
+            updateDetectionList([]);
+
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            if (uptimeInterval) {
+                clearInterval(uptimeInterval);
+                uptimeInterval = null;
+            }
+
+            showToast('⏹ Camera stopped', '');
+        };
+
+        // ===== Detect Faces =====
+        async function detectFaces() {
+            if (!isRunning || !stream) return;
+
+            try {
+                if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+                const startTime = performance.now();
+                const response = await fetch('/detect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                const data = await response.json();
+
+                const duration = performance.now() - startTime;
+                currentFps = Math.round(1000 / duration);
+
+                if (Date.now() - lastFpsUpdate > 500) {
+                    fpsDisplay.textContent = currentFps;
+                    lastFpsUpdate = Date.now();
+                }
+
+                if (data.error) {
+                    console.error('Detection error:', data.error);
+                    return;
+                }
+
+                if (data.image) {
+                    const img = new Image();
+                    img.onload = function() {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        canvas.classList.add('active');
+                        video.classList.remove('active');
+                    };
+                    img.onerror = function() {
+                        video.classList.add('active');
+                        canvas.classList.remove('active');
+                    };
+                    img.src = 'data:image/jpeg;base64,' + data.image;
+                }
+
+                faceCount.textContent = data.count || 0;
+
+                if (data.objects) {
+                    updateDetectionList(data.objects);
+                }
+
+            } catch (err) {
+                console.error('Detection error:', err);
+            }
+        }
+
+        // ===== Cleanup =====
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (intervalId) clearInterval(intervalId);
+            if (uptimeInterval) clearInterval(uptimeInterval);
+        });
+
+        // ===== Log =====
+        setStatus('Idle');
+        console.log('👤 VisionAI Face Detection');
+        console.log('📷 Click Start to begin');
+        console.log('🎯 Accurate face detection ready');
+    </script>
+</body>
+</html>
