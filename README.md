@@ -44,5 +44,6 @@ VisionAI is a real-time object detection and tracking system that identifies and
 <img width="273" height="330" alt="image" src="https://github.com/user-attachments/assets/b06ed5cd-55ff-4399-828f-59624eb5bce1" />
 
 
-PIPELINE OF SYSTEM
+## PIPELINE OF SYSTEM
+
 Camera Capture → Preprocess → YOLO/MobileNet SSD → NMS → Tracking → Draw Results
