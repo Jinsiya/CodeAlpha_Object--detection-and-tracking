@@ -69,10 +69,9 @@ bash
 pip install -r requirements.txt
 ##Step 4: Download Models
 bash
-# Models auto-download on first run
-# Or manually download:
-# - MobileNet SSD: 13MB
-# - YOLOv3: 240MB
+Models auto-download on first run Or manually download:
+ - MobileNet SSD: 13MB
+ - YOLOv3: 240MB
 ## Step 5: Run Application
 python app.py
 
