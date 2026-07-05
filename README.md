@@ -47,3 +47,38 @@ VisionAI is a real-time object detection and tracking system that identifies and
 ## PIPELINE OF SYSTEM
 
 Camera Capture → Preprocess → YOLO/MobileNet SSD → NMS → Tracking → Draw Results
+
+## 🚀 Installation
+
+### Step 1: Clone Repository
+
+
+git clone https://github.com/Jinsiya/CodeAlpha_Object--detection-and-tr---.git
+cd CodeAlpha_Object--detection-and-tr---
+## Step 2: Create Virtual Environment
+bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+## Step 3: Install Dependencies
+bash
+pip install -r requirements.txt
+##Step 4: Download Models
+bash
+# Models auto-download on first run
+# Or manually download:
+# - MobileNet SSD: 13MB
+# - YOLOv3: 240MB
+## Step 5: Run Application
+python app.py
+
+
+## Troubleshooting
+pip install opencv-python-headless
+
+# Test camera
+python -c "import cv2; print(cv2.VideoCapture(0).isOpened())"
