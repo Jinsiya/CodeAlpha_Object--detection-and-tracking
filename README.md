@@ -67,7 +67,7 @@ source venv/bin/activate
 ## Step 3: Install Dependencies
 bash
 pip install -r requirements.txt
-##Step 4: Download Models
+## Step 4: Download Models
 bash
 Models auto-download on first run Or manually download:
  - MobileNet SSD: 13MB
